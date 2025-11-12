@@ -13,6 +13,12 @@ provider "aws" {
   region = "ap-northeast-1" # 東京リージョンを使用
 }
 
+# --- KMS Key for Encryption ---
+resource "aws_kms_key" "encryption_key" {
+  description             = "KMS key for encrypting Slack API tokens"
+  deletion_window_in_days = 7
+}
+
 # --- DynamoDB Tables ---
 
 # Usersテーブル
@@ -97,10 +103,11 @@ resource "aws_iam_role" "lambda_exec_role" {
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
-# --- IAM Policy for DynamoDB Access ---
+# --- IAM Policy for Lambda Access ---
 
-data "aws_iam_policy_document" "dynamodb_access" {
+data "aws_iam_policy_document" "lambda_access" {
   statement {
+    sid = "DynamoDBAccess"
     actions = [
       "dynamodb:Query",
       "dynamodb:Scan",
@@ -116,12 +123,23 @@ data "aws_iam_policy_document" "dynamodb_access" {
       "${aws_dynamodb_table.lab_members_table.arn}/index/*",
     ]
   }
+
+  statement {
+    sid = "KMSAccess"
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt"
+    ]
+    resources = [
+      aws_kms_key.encryption_key.arn
+    ]
+  }
 }
 
-resource "aws_iam_role_policy" "dynamodb_access_policy" {
-  name   = "KANKAN-BS2-DynamoDBAccessPolicy"
+resource "aws_iam_role_policy" "lambda_access_policy" {
+  name   = "KANKAN-BS2-LambdaAccessPolicy"
   role   = aws_iam_role.lambda_exec_role.id
-  policy = data.aws_iam_policy_document.dynamodb_access.json
+  policy = data.aws_iam_policy_document.lambda_access.json
 }
 
 # --- Attach Basic Lambda Execution Policy for Logs ---
@@ -146,11 +164,12 @@ resource "aws_lambda_function" "api_lambda" {
     variables = {
       DYNAMODB_TABLE_USERS   = aws_dynamodb_table.users_table.name
       DYNAMODB_TABLE_MEMBERS = aws_dynamodb_table.lab_members_table.name
+      KMS_KEY_ID             = aws_kms_key.encryption_key.id
     }
   }
 
   depends_on = [
-    aws_iam_role_policy.dynamodb_access_policy,
+    aws_iam_role_policy.lambda_access_policy,
     aws_iam_role_policy_attachment.lambda_basic_execution,
   ]
 }
