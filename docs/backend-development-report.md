@@ -126,3 +126,50 @@
 - Slack APIトークンなど、Lambda関数が実行時に必要とする環境変数をセキュアに管理する方法（例: AWS Secrets Manager）を検討する。
 - 支払い計算やDM送信のユースケースに対応するAPIエンドポイントを実装する。
 - フロントエンドとの連携を進める。
+
+---
+
+# バックエンド開発レポート (2025年11月13日 - 続き)
+
+## 概要
+本日は、LabメンバーのCRUD操作機能と、メンバーの進級時のBulkUpdateエンドポイントの実装を行いました。また、要件定義書にユーザーからのフィードバックを反映させ、支払い計算ロジックの修正も完了しました。
+
+## 作業内容
+
+### 1. APIエンドポイント要件定義書の更新
+- `docs/requirements/api-endpoints.md`に、LabメンバーのCRUD操作とBulkUpdateエンドポイントに関するユーザーからのフィードバックを反映させました。
+  - `attribute`の取り得る値、`LabMember`作成時の`userId`の取得元、進級ルールの厳密な適用、BulkUpdateの対象範囲、レスポンス形式（サマリーで十分）などが明確になりました。
+
+### 2. PaymentCalculatorロジックの修正
+- 支払い計算の端数処理に関する新しい要件を`backend/domain/services/PaymentCalculator.ts`に実装しました。
+  - 全体の金額を10円単位で切り上げ、同じ`attribute`のメンバーには同じ金額を割り当て、支払い金額は10円単位で不足する場合は切り上げるロジックを導入しました。
+
+### 3. Labメンバー関連ユースケースの実装
+- 以下のユースケースを`backend/application/usecases/`ディレクトリに実装しました。
+  - `CreateLabMember.ts`: Labメンバーの作成
+  - `GetLabMember.ts`: Labメンバーの取得
+  - `UpdateLabMember.ts`: Labメンバーの更新
+  - `DeleteLabMember.ts`: Labメンバーの削除
+  - `BulkUpdateLabMembersAttribute.ts`: Labメンバーの属性を一括で進級させるロジック（進級ルールと制約を考慮）
+
+### 4. Labメンバー関連APIエンドポイントの実装
+- `backend/presentation/routes/labMemberRoutes.ts`を作成し、以下のAPIエンドポイントを実装しました。
+  - `POST /api/v1/lab-members`: Labメンバーの作成
+  - `GET /api/v1/lab-members/:id`: Labメンバーの取得
+  - `PUT /api/v1/lab-members/:id`: Labメンバーの更新
+  - `DELETE /api/v1/lab-members/:id`: Labメンバーの削除
+  - `POST /api/v1/lab-members/bulk-update-attribute`: Labメンバーの属性を一括で進級
+
+### 5. ルーティングの追加
+- `backend/presentation/server.ts`に`labMemberRoutes`のルーティングを追加しました。
+
+## 進捗 (100分率)
+- **全体的な機能実装:** 約 70%
+
+## 次のおすすめ作業 (3択)
+1.  **既存の `/collect-from-slack` エンドポイントのデバッグと動作確認:**
+    *   Lambdaにデプロイし、実際にリクエストを送信して、期待通りに動作することを確認します。これにより、アプリケーションの基本的な動作が保証されます。
+2.  **認証・認可機能の検討と実装:**
+    *   現在のAPIエンドポイントは認証なしでアクセス可能ですが、セキュリティを考慮すると認証・認可機能の実装が不可欠です。ユーザー管理機能と連携し、APIキー、JWT、またはAWS Cognitoなどの導入を検討します。
+3.  **フロントエンドとの連携の開始:**
+    *   バックエンドの主要なAPIエンドポイントが揃ったため、フロントエンドチームと連携し、APIの仕様を共有し、フロントエンドからの呼び出しをテストし始めることができます。
