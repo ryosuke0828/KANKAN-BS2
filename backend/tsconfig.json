@@ -1,20 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "CommonJS",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "./dist",
     "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": "./",
-    "paths": {
-      "application/*": ["application/*"],
-      "domain/*": ["domain/*"],
-      "infrastructure/*": ["infrastructure/*"],
-      "presentation/*": ["presentation/*"]
-    }
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "./**/*.ts"
