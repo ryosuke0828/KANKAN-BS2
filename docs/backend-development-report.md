@@ -1,3 +1,41 @@
+# バックエンド開発レポート (2025年11月13日)
+
+## 概要
+本日は、前回からの課題であったSlack APIトークンの暗号化・復号処理のテスト環境構築と、それに伴うTypeScriptプロジェクトのESM対応、およびテストの簡素化を行いました。Jestの複雑な設定を避け、Node.jsの組み込み機能とTypeScriptコンパイラを活用したシンプルなユニットテスト環境を構築し、テストがすべて成功することを確認しました。
+
+## 作業内容
+
+### 1. テスト環境の再構築とESM対応
+- **JestのESM問題への対応と断念:**
+  - 前回、`uuid`パッケージのESM形式に起因する`SyntaxError: Unexpected token 'export'`エラーが発生し、JestでのESM対応に苦慮しました。`jest.config.js`の`type: "module"`や`ts-jest/presets/default-esm`、`babel-jest`の導入など様々なアプローチを試みましたが、TypeScriptのコンパイルエラーやNode.jsのランタイムエラーが頻発し、安定したテスト環境を構築できませんでした。
+  - 特に、`package.json`の`"type": "module"`設定とJestのCommonJSベースの動作の間の不整合、および`node_modules`内のESMモジュールをJestのトランスフォーマーで適切に処理することの複雑さが大きな障壁となりました。度重なる設定変更にも関わらず、テストに本質的に関係ない部分でのエラーが解消されず、開発効率を著しく低下させる結果となりました。
+  - このため、Jestの利用を断念し、よりシンプルなテスト手法への移行を決定しました。
+- **シンプルなユニットテストへの移行:**
+  - Jestの複雑な設定から離れ、Node.jsの`assert`モジュールとTypeScriptコンパイラ(`tsc`)を直接利用するシンプルなユニットテスト環境へ移行する方針を決定しました。
+  - `backend/tests/repositories/UserRepositoryImpl.test.ts` (Jest用) を削除し、`backend/tests/repositories/UserRepositoryImpl.simple.test.ts` を新規作成しました。このテストファイルは、`UserRepositoryImpl`の外部依存（DynamoDBクライアント、KMSクライアント）をモック化し、暗号化・復号ロジックのユニットテストに焦点を当てています。
+- **TypeScriptプロジェクトのESM対応の完了:**
+  - `package.json`の`"type": "module"`設定を維持しつつ、`tsconfig.json`の`compilerOptions.module`を`NodeNext`に、`compilerOptions.moduleResolution`も`NodeNext`に設定しました。これにより、TypeScriptコンパイラがESMの解決ルールに従うようになりました。
+  - `tsconfig.json`から`baseUrl`と`paths`の設定を削除し、`tsc-alias`への依存を解消しました。
+  - プロジェクト内のすべての相対インポートパス（例: `../../domain/entities/User`）に明示的に`.js`拡張子を追加しました（例: `../../domain/entities/User.js`）。これはESM環境におけるNode.jsのモジュール解決ルールに準拠するためです。
+  - `uuid`パッケージのインポートも、型定義の問題を避けるため、`import { v4 as uuidv4 } from 'uuid';` の形式に戻しました。
+- **不要なパッケージと設定のクリーンアップ:**
+  - `backend/jest.config.js`を削除しました。
+  - `backend/package.json`からJest関連の依存関係（`jest`, `ts-jest`, `@types/jest`, `babel-jest`, `@babel/core`, `@babel/preset-env`）とスクリプト（`test`）を削除しました。
+  - `tsc-alias`と`tsconfig-paths`をアンインストールし、`package.json`の`build`スクリプトから`tsc-alias`の実行を削除しました。
+- **テストスクリプトの追加:**
+  - `package.json`に`"test:unit": "npm run build && node dist/tests/repositories/UserRepositoryImpl.simple.test.js"`スクリプトを追加しました。これにより、TypeScriptファイルのコンパイルと、コンパイル済みJavaScriptテストファイルの実行を一度に行えるようになりました。
+
+### 2. テスト結果
+- 上記の変更後、`npm run test:unit`を実行したところ、`UserRepositoryImpl`の暗号化・復号ロジックに関するすべてのテストが成功しました。これにより、Slack APIトークンのアダプタ層での暗号化・復号処理が期待通りに機能していることを確認できました。
+
+## 今後の課題
+- APIエンドポイントのデバッグを完了し、Lambda関数が正常に動作することを確認する。
+- Slack APIトークンなど、Lambda関数が実行時に必要とする環境変数をセキュアに管理する方法（例: AWS Secrets Manager）を検討する。
+- 支払い計算やDM送信のユースケースに対応するAPIエンドポイントを実装する。
+- フロントエンドとの連携を進める。
+
+---
+
 # バックエンド開発レポート (2025年11月12日)
 
 ## 概要
