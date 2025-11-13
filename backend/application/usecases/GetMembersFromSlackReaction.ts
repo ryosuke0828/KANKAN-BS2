@@ -1,7 +1,7 @@
-import { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository';
-import { ISlackRepository } from '../../domain/interfaces/ISlackRepository';
-import { LabMember } from '../../domain/entities/LabMember';
+import { IUserRepository } from '../../domain/interfaces/IUserRepository.js';
+import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
+import { ISlackRepository } from '../../domain/interfaces/ISlackRepository.js';
+import { LabMember } from '../../domain/entities/LabMember.js';
 
 // ユースケースの入力データ型
 export interface GetMembersFromSlackReactionInput {

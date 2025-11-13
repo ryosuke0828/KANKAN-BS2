@@ -1,4 +1,4 @@
-import { LabMember } from '../entities/LabMember';
+import { LabMember } from '../entities/LabMember.js';
 
 export interface ILabMemberRepository {
   findById(id: string): Promise<LabMember | null>;

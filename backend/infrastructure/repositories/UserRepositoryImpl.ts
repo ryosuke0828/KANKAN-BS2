@@ -11,8 +11,8 @@ import {
   EncryptCommand,
   DecryptCommand,
 } from '@aws-sdk/client-kms';
-import { User } from 'domain/entities/User';
-import { IUserRepository } from 'domain/interfaces/IUserRepository';
+import { User } from '../../domain/entities/User.js';
+import { IUserRepository } from '../../domain/interfaces/IUserRepository.js';
 
 export class UserRepositoryImpl implements IUserRepository {
   private readonly docClient: DynamoDBDocumentClient;

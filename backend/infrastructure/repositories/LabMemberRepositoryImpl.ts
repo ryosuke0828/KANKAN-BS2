@@ -6,8 +6,8 @@ import {
   DeleteCommand,
   QueryCommand,
 } from '@aws-sdk/lib-dynamodb';
-import { LabMember } from 'domain/entities/LabMember';
-import { ILabMemberRepository } from 'domain/interfaces/ILabMemberRepository';
+import { LabMember } from '../../domain/entities/LabMember.js';
+import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
 
 export class LabMemberRepositoryImpl implements ILabMemberRepository {
   private readonly client: DynamoDBDocumentClient;

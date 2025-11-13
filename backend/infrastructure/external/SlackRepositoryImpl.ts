@@ -1,5 +1,5 @@
 import { WebClient } from '@slack/web-api';
-import { ISlackRepository } from 'domain/interfaces/ISlackRepository';
+import { ISlackRepository } from '../../domain/interfaces/ISlackRepository.js';
 
 export class SlackRepositoryImpl implements ISlackRepository {
   private readonly client: WebClient;

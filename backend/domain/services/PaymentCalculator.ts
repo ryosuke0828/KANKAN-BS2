@@ -1,4 +1,4 @@
-import { MemberAttribute } from '../types/MemberAttribute';
+import { MemberAttribute } from '../types/MemberAttribute.js';
 
 // 計算に必要なメンバー情報
 export interface Payer {

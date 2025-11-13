@@ -1,4 +1,4 @@
-import { MemberAttribute } from '../types/MemberAttribute';
+import { MemberAttribute } from '../types/MemberAttribute.js';
 
 export class LabMember {
   constructor(

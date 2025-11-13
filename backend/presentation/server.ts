@@ -1,6 +1,6 @@
 import express from 'express';
 import serverless from 'serverless-http';
-import memberRoutes from './routes/memberRoutes';
+import memberRoutes from './routes/memberRoutes.js';
 
 const app = express();
 

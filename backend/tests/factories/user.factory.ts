@@ -1,4 +1,4 @@
-import { User } from 'domain/entities/User';
+import { User } from '../../domain/entities/User.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export const createUser = (overrides: Partial<User> = {}): User => {

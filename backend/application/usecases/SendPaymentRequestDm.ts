@@ -1,6 +1,6 @@
-import { IUserRepository } from '../../domain/interfaces/IUserRepository';
-import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository';
-import { ISlackRepository } from '../../domain/interfaces/ISlackRepository';
+import { IUserRepository } from '../../domain/interfaces/IUserRepository.js';
+import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
+import { ISlackRepository } from '../../domain/interfaces/ISlackRepository.js';
 
 // ユースケースの入力データ型
 export interface PaymentRequest {

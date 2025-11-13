@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { GetMembersFromSlackReaction } from 'application/usecases/GetMembersFromSlackReaction';
-import { LabMemberRepositoryImpl } from 'infrastructure/repositories/LabMemberRepositoryImpl';
-import { UserRepositoryImpl } from 'infrastructure/repositories/UserRepositoryImpl';
-import { SlackRepositoryImpl } from 'infrastructure/external/SlackRepositoryImpl';
+import { GetMembersFromSlackReaction } from '../../application/usecases/GetMembersFromSlackReaction.js';
+import { LabMemberRepositoryImpl } from '../../infrastructure/repositories/LabMemberRepositoryImpl.js';
+import { UserRepositoryImpl } from '../../infrastructure/repositories/UserRepositoryImpl.js';
+import { SlackRepositoryImpl } from '../../infrastructure/external/SlackRepositoryImpl.js';
 
 const router = Router();
 
