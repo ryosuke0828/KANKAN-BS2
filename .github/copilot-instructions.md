@@ -3,3 +3,5 @@ frontendはreactとMaterial UIを用い，Single Page ApplicationとしてUIを�
 backendではtypescriptを用いてdomain driven designの4層アーキテクチャに準拠した設計を行います．オブジェクト指向型で記述し，一つのクラスは一つのファイルに書き込むようにします．
 
 チャットスペースでの全ての応答は日本語で行なってください
+
+gitのcommitメッセージは[fix or debug or feature] description  というような形式にしてください．
