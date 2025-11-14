@@ -2,7 +2,7 @@ import {
   PaymentCalculator,
   Payer,
   CalculatedAmount,
-} from '../../domain/services/PaymentCalculator.js';
+} from '../../../domain/services/PaymentCalculator.js';
 
 // ユースケースの入力データ型
 export interface CalculatePaymentInput {

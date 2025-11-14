@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { CalculatePayment } from '../../application/usecases/CalculatePayment.js';
-import { SendPaymentRequestDm } from '../../application/usecases/SendPaymentRequestDm.js';
+import { CalculatePayment } from '../../application/usecases/payment/CalculatePayment.js';
+import { SendPaymentRequestDm } from '../../application/usecases/payment/SendPaymentRequestDm.js';
 import { UserRepositoryImpl } from '../../infrastructure/repositories/UserRepositoryImpl.js';
 import { LabMemberRepositoryImpl } from '../../infrastructure/repositories/LabMemberRepositoryImpl.js';
 import { SlackRepositoryImpl } from '../../infrastructure/external/SlackRepositoryImpl.js';

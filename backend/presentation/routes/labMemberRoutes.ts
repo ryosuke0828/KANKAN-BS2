@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { CreateLabMember } from '../../application/usecases/CreateLabMember.js';
-import { GetLabMember } from '../../application/usecases/GetLabMember.js';
-import { UpdateLabMember } from '../../application/usecases/UpdateLabMember.js';
-import { DeleteLabMember } from '../../application/usecases/DeleteLabMember.js';
-import { BulkUpdateLabMembersAttribute } from '../../application/usecases/BulkUpdateLabMembersAttribute.js';
+import { CreateLabMember } from '../../application/usecases/lab-member/CreateLabMember.js';
+import { GetLabMember } from '../../application/usecases/lab-member/GetLabMember.js';
+import { UpdateLabMember } from '../../application/usecases/lab-member/UpdateLabMember.js';
+import { DeleteLabMember } from '../../application/usecases/lab-member/DeleteLabMember.js';
+import { BulkUpdateLabMembersAttribute } from '../../application/usecases/lab-member/BulkUpdateLabMembersAttribute.js';
 import { LabMemberRepositoryImpl } from '../../infrastructure/repositories/LabMemberRepositoryImpl.js';
 
 const router = Router();

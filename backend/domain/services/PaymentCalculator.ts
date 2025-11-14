@@ -23,40 +23,52 @@ export class PaymentCalculator {
     const finalTotalAmount = Math.ceil(totalAmount / 10) * 10;
 
     // 2. attributeごとの合計weightとメンバー数を計算
-    const attributeSummary = payers.reduce((acc, payer) => {
-      if (!acc[payer.attribute]) {
-        acc[payer.attribute] = { totalWeight: 0, memberCount: 0 };
-      }
-      acc[payer.attribute].totalWeight += payer.weight;
-      acc[payer.attribute].memberCount++;
-      return acc;
-    }, {} as Record<MemberAttribute, { totalWeight: number; memberCount: number }>);
+    const attributeSummary = payers.reduce(
+      (
+        acc,
+        payer,
+      ): Record<MemberAttribute, { totalWeight: number; memberCount: number }> => {
+        if (!acc[payer.attribute]) {
+          acc[payer.attribute] = { totalWeight: 0, memberCount: 0 };
+        }
+        acc[payer.attribute].totalWeight += payer.weight;
+        acc[payer.attribute].memberCount++;
+        return acc;
+      },
+      {} as Record<MemberAttribute, { totalWeight: number; memberCount: number }>,
+    );
 
     // 3. 各attributeグループにfinalTotalAmountをweight比で割り振る
     let totalAllocatedAmount = 0;
-    const attributeAllocatedAmounts: Record<MemberAttribute, number> = {};
+    const attributeAllocatedAmounts = {} as Record<MemberAttribute, number>;
     const overallTotalWeight = payers.reduce((sum, p) => sum + p.weight, 0);
 
     if (overallTotalWeight === 0) {
       // 全体の重みが0の場合、均等割り
       if (payers.length === 0) return [];
-      const amountPerPerson = Math.ceil((finalTotalAmount / payers.length) / 10) * 10;
+      const amountPerPerson =
+        Math.ceil((finalTotalAmount / payers.length) / 10) * 10;
       return payers.map(p => ({ memberId: p.memberId, amount: amountPerPerson }));
     }
 
-    for (const attribute in attributeSummary) {
+    (Object.keys(attributeSummary) as MemberAttribute[]).forEach(attribute => {
       const summary = attributeSummary[attribute];
-      const allocatedAmountForAttribute = Math.floor((finalTotalAmount * summary.totalWeight) / overallTotalWeight);
+      const allocatedAmountForAttribute = Math.floor(
+        (finalTotalAmount * summary.totalWeight) / overallTotalWeight,
+      );
       attributeAllocatedAmounts[attribute] = allocatedAmountForAttribute;
       totalAllocatedAmount += allocatedAmountForAttribute;
-    }
+    });
 
     // 4. 全体の割り振り誤差を調整
     let remainingDifference = finalTotalAmount - totalAllocatedAmount;
     // 誤差を最も重みの大きいattributeグループに加算する
     if (remainingDifference !== 0) {
-      const sortedAttributes = Object.keys(attributeSummary).sort((a, b) =>
-        attributeSummary[b].totalWeight - attributeSummary[a].totalWeight
+      const sortedAttributes = (
+        Object.keys(attributeSummary) as MemberAttribute[]
+      ).sort(
+        (a, b) =>
+          attributeSummary[b].totalWeight - attributeSummary[a].totalWeight,
       );
       if (sortedAttributes.length > 0) {
         attributeAllocatedAmounts[sortedAttributes[0]] += remainingDifference;

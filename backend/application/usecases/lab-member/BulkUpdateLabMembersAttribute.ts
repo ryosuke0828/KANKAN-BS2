@@ -1,6 +1,6 @@
-import { LabMember } from '../../domain/entities/LabMember.js';
-import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
-import { MemberAttribute } from '../../domain/types/MemberAttribute.js';
+import { LabMember } from '../../../domain/entities/LabMember.js';
+import { ILabMemberRepository } from '../../../domain/interfaces/ILabMemberRepository.js';
+import { MemberAttribute } from '../../../domain/types/MemberAttribute.js';
 
 export interface BulkUpdateLabMembersAttributeInput {
   userId: string; // 一括更新を行うユーザーのID

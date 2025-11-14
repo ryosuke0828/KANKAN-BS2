@@ -1,4 +1,4 @@
-import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
+import { ILabMemberRepository } from '../../../domain/interfaces/ILabMemberRepository.js';
 
 export interface DeleteLabMemberInput {
   id: string;

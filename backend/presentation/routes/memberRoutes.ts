@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { GetMembersFromSlackReaction } from '../../application/usecases/GetMembersFromSlackReaction.js';
+import { GetMembersFromSlackReaction } from '../../application/usecases/slack/GetMembersFromSlackReaction.js';
 import { LabMemberRepositoryImpl } from '../../infrastructure/repositories/LabMemberRepositoryImpl.js';
 import { UserRepositoryImpl } from '../../infrastructure/repositories/UserRepositoryImpl.js';
 import { SlackRepositoryImpl } from '../../infrastructure/external/SlackRepositoryImpl.js';

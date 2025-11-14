@@ -1,5 +1,5 @@
-import { LabMember } from '../../domain/entities/LabMember.js';
-import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
+import { LabMember } from '../../../domain/entities/LabMember.js';
+import { ILabMemberRepository } from '../../../domain/interfaces/ILabMemberRepository.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface CreateLabMemberInput {
