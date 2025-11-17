@@ -1,29 +1,16 @@
-# Terraform自体の設定
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0" # AWSプロバイダーのバージョンを指定
-    }
+# --- KMS Key for Encryption ---
+resource "aws_kms_key" "encryption_key" {
+  description             = "KMS key for encrypting Slack API tokens for ${var.project_name}-${var.environment}"
+  deletion_window_in_days = 7
+  tags = {
+    Name        = "${var.project_name}-${var.environment}-EncryptionKey"
+    Environment = var.environment
   }
 }
 
-# 使用するクラウドプロバイダー（AWS）の設定
-provider "aws" {
-  region = "ap-northeast-1" # 東京リージョンを使用
-}
-
-# --- KMS Key for Encryption ---
-resource "aws_kms_key" "encryption_key" {
-  description             = "KMS key for encrypting Slack API tokens"
-  deletion_window_in_days = 7
-}
-
 # --- DynamoDB Tables ---
-
-# Usersテーブル
 resource "aws_dynamodb_table" "users_table" {
-  name         = "KANKAN-BS2-Users"
+  name         = "${var.project_name}-${var-environment}-Users"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 
@@ -44,13 +31,13 @@ resource "aws_dynamodb_table" "users_table" {
   }
 
   tags = {
-    Name = "KANKAN-BS2-Users"
+    Name        = "${var.project_name}-${var.environment}-Users"
+    Environment = var.environment
   }
 }
 
-# LabMembersテーブル
 resource "aws_dynamodb_table" "lab_members_table" {
-  name         = "KANKAN-BS2-LabMembers"
+  name         = "${var.project_name}-${var.environment}-LabMembers"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 
@@ -82,12 +69,12 @@ resource "aws_dynamodb_table" "lab_members_table" {
   }
 
   tags = {
-    Name = "KANKAN-BS2-LabMembers"
+    Name        = "${var.project_name}-${var.environment}-LabMembers"
+    Environment = var.environment
   }
 }
 
 # --- IAM Role for Lambda ---
-
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -99,12 +86,14 @@ data "aws_iam_policy_document" "lambda_assume_role" {
 }
 
 resource "aws_iam_role" "lambda_exec_role" {
-  name               = "KANKAN-BS2-LambdaExecRole"
+  name               = "${var.project_name}-${var.environment}-LambdaExecRole"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+  tags = {
+    Environment = var.environment
+  }
 }
 
 # --- IAM Policy for Lambda Access ---
-
 data "aws_iam_policy_document" "lambda_access" {
   statement {
     sid = "DynamoDBAccess"
@@ -137,12 +126,10 @@ data "aws_iam_policy_document" "lambda_access" {
 }
 
 resource "aws_iam_role_policy" "lambda_access_policy" {
-  name   = "KANKAN-BS2-LambdaAccessPolicy"
+  name   = "${var.project_name}-${var.environment}-LambdaAccessPolicy"
   role   = aws_iam_role.lambda_exec_role.id
   policy = data.aws_iam_policy_document.lambda_access.json
 }
-
-# --- Attach Basic Lambda Execution Policy for Logs ---
 
 resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   role       = aws_iam_role.lambda_exec_role.name
@@ -150,22 +137,26 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
 }
 
 # --- Lambda Function ---
-
 resource "aws_lambda_function" "api_lambda" {
-  filename         = "../backend/deployment_package.zip"
-  function_name    = "KANKAN-BS2-API"
+  filename         = "../../../backend/deployment_package.zip"
+  function_name    = "${var.project_name}-${var.environment}-API"
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = "dist/presentation/server.handler"
   runtime          = "nodejs20.x"
   timeout          = 30
-  source_code_hash = filebase64sha256("../backend/deployment_package.zip")
+  source_code_hash = filebase64sha256("../../../backend/deployment_package.zip")
 
   environment {
     variables = {
       DYNAMODB_TABLE_USERS   = aws_dynamodb_table.users_table.name
       DYNAMODB_TABLE_MEMBERS = aws_dynamodb_table.lab_members_table.name
       KMS_KEY_ID             = aws_kms_key.encryption_key.id
+      ENVIRONMENT            = var.environment
     }
+  }
+
+  tags = {
+    Environment = var.environment
   }
 
   depends_on = [
@@ -175,10 +166,12 @@ resource "aws_lambda_function" "api_lambda" {
 }
 
 # --- API Gateway (HTTP API) ---
-
 resource "aws_apigatewayv2_api" "http_api" {
-  name          = "KANKAN-BS2-HTTP-API"
+  name          = "${var.project_name}-${var.environment}-HTTP-API"
   protocol_type = "HTTP"
+  tags = {
+    Environment = var.environment
+  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
@@ -205,11 +198,4 @@ resource "aws_lambda_permission" "api_gateway_permission" {
   function_name = aws_lambda_function.api_lambda.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
-}
-
-# --- Outputs ---
-
-output "api_endpoint_url" {
-  description = "The URL of the API Gateway endpoint"
-  value       = aws_apigatewayv2_stage.default_stage.invoke_url
 }

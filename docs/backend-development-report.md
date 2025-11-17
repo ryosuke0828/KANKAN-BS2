@@ -1,4 +1,3 @@
-
 # バックエンド開発レポート (2025年11月6日)
 
 ## 概要
@@ -219,3 +218,44 @@
 - `labMemberRoutes.ts`, `memberRoutes.ts`, `paymentRoutes.ts` のすべてにDIパターンを適用しました。
 - `labMemberRoutes`の`POST /api/v1/lab-members`エンドポイントに対するテストコード (`tests/routes/labMemberRoutes.test.ts`) を作成しました。
 - 作成したテストが、リポジトリのモックを使って正常に実行され、成功することを確認しました。
+
+---
+
+# バックエンド開発レポート (2025年11月17日)
+
+## 概要
+本日は、Terraformの構成をリファクタリングし、ブランチ戦略（main/develop）に合わせた環境分離を行いました。これにより、本番環境と開発環境のインフラを独立して管理できるようになり、より安全なデプロイフローを確立しました。
+
+## 作業内容
+
+### 1. Terraform環境のベストプラクティス導入
+- **目的:** `main`ブランチを本番環境（production）、`develop`ブランチを開発環境（staging）として、それぞれのインフラ構成を分離する。
+- **ディレクトリ構造の変更:**
+  - `terraform/environments`ディレクトリを新設し、その配下に`production`と`staging`の各環境用ディレクトリを作成しました。
+  - `terraform/modules/application`ディレクトリを作成し、環境間で共通となるAWSリソース（Lambda, DynamoDB, API Gateway, IAM Roleなど）の定義をモジュールとして集約しました。
+- **モジュール化とパラメータ化:**
+  - 従来ルートの`main.tf`に記述されていたリソース定義を、新しく作成した`application`モジュールに移動しました。
+  - リソース名（例: DynamoDBテーブル名、Lambda関数名）に`environment`変数（"production" or "staging"）を組み込むことで、各環境でリソース名が重複しないように設定しました。
+- **環境ごとの設定:**
+  - 各環境ディレクトリ（`production`, `staging`）には、プロバイダー設定と、`application`モジュールを呼び出す最小限の`main.tf`を配置しました。これにより、環境ごとの差異（将来的な変数追加など）を容易に管理できます。
+- **クリーンアップ:**
+  - ルートディレクトリにあった古い`main.tf`および`.terraform.lock.hcl`を削除し、構成を整理しました。
+
+### 2. 今後の運用について
+- `staging`環境のインフラを操作する場合:
+  ```bash
+  cd terraform/environments/staging
+  terraform init && terraform apply
+  ```
+- `production`環境のインフラを操作する場合:
+  ```bash
+  cd terraform/environments/production
+  terraform init && terraform apply
+  ```
+というように、各環境のディレクトリに移動してTerraformコマンドを実行する運用フローを確立しました。
+
+## 進捗 (100分率)
+- **インフラ構成管理:** 90% (CI/CDパイプラインとの連携が今後の課題)
+
+## 次のおすすめ作業
+- **CI/CDパイプラインの構築:** GitHub Actionsなどを利用して、`develop`ブランチへのマージで`staging`環境へ、`main`ブランチへのマージで`production`環境へ自動的に`terraform apply`が実行されるパイプラインを構築する。
