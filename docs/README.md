@@ -1,4 +1,5 @@
 このリポジトリでは以前めちゃくちゃに作ってしまったKANKANをちゃんとやり直すというコンセプトのプロジェクトを扱います．
 
-frontendはReactを使います．なんとなーくクリーンアーキテクチャに寄せた実装にしたい所存です．
-BackendはTypeScriptでdomain driven designの4層アーキテクチャで作ります．
+frontendはReactを使います．なんとなくクリーンアーキテクチャに準拠実装にしたい所存です．
+BackendはExpress(node.js)TypeScriptでトランスパイル，domain driven designの4層アーキテクチャです．
+インフラはAWSでterraformで管理します．
