@@ -18,7 +18,9 @@ import {
   Menu as MenuIcon,
   Home as HomeIcon,
   People as PeopleIcon,
+  Logout as LogoutIcon, // 追加
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext'; // 追加
 
 const drawerWidth = 240;
 
@@ -37,6 +39,7 @@ const Layout: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth(); // 追加
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -49,6 +52,11 @@ const Layout: React.FC = () => {
 
   const handleTitleClick = () => {
     navigate('/');
+  };
+
+  const handleLogout = () => { // 追加
+    logout();
+    navigate('/login');
   };
 
   const drawer = (
@@ -94,6 +102,7 @@ const Layout: React.FC = () => {
             component="div"
             onClick={handleTitleClick}
             sx={{ 
+              flexGrow: 1, // 右側の要素を押し出すために追加
               cursor: 'pointer',
               '&:hover': {
                 opacity: 0.8,
@@ -102,6 +111,10 @@ const Layout: React.FC = () => {
           >
             {menuItems.find((item) => item.path === location.pathname)?.text || 'KANKAN-BS2'}
           </Typography>
+          {/* ログアウトボタンを追加 */}
+          <IconButton color="inherit" onClick={handleLogout}>
+            <LogoutIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <Box component="nav" aria-label="menu">
