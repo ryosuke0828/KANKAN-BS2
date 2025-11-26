@@ -14,7 +14,9 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.0",
     "@types/supertest": "^6.0.3",
     "@types/uuid": "^10.0.0",
@@ -27,7 +29,9 @@
     "@aws-sdk/client-kms": "^3.929.0",
     "@aws-sdk/lib-dynamodb": "^3.925.0",
     "@slack/web-api": "^7.12.0",
+    "bcrypt": "^6.0.0",
     "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
     "serverless-http": "^4.0.0",
     "uuid": "^13.0.0"
   }

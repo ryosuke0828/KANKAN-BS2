@@ -88,6 +88,16 @@ resource "aws_dynamodb_table" "lab_members_table" {
 
 # --- IAM Role for Lambda ---
 
+# --- SSM Parameter for JWT Secret ---
+resource "aws_ssm_parameter" "jwt_secret" {
+  name  = "/KANKAN-BS2/JWT_SECRET"
+  type  = "String" # 本番環境ではSecureStringを検討
+  value = "dummy-secret-value-please-change-in-aws-console"
+  tags = {
+    Name = "KANKAN-BS2-JWT-Secret"
+  }
+}
+
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -165,6 +175,7 @@ resource "aws_lambda_function" "api_lambda" {
       DYNAMODB_TABLE_USERS   = aws_dynamodb_table.users_table.name
       DYNAMODB_TABLE_MEMBERS = aws_dynamodb_table.lab_members_table.name
       KMS_KEY_ID             = aws_kms_key.encryption_key.id
+      JWT_SECRET             = aws_ssm_parameter.jwt_secret.value
     }
   }
 
