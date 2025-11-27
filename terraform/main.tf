@@ -190,6 +190,16 @@ resource "aws_lambda_function" "api_lambda" {
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "KANKAN-BS2-HTTP-API"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_origins = [
+      "http://localhost:3000" # 開発用フロントエンド
+      # "https://your-production-domain.com" # 将来の本番環境ドメイン
+    ]
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_headers = ["Content-Type", "Authorization", "X-Amz-Date", "X-Api-Key", "X-Amz-Security-Token"]
+    max_age       = 300
+  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
