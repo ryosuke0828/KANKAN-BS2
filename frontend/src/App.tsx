@@ -7,6 +7,8 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Members from './pages/Members';
 import Login from './pages/Login';
+import Register from './pages/Register';
+import Profile from './pages/Profile'; // 追加
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -29,12 +31,14 @@ const App: React.FC = () => {
         <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             
             {/* 保護されたルート */}
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
                 <Route path="members" element={<Members />} />
+                <Route path="profile" element={<Profile />} /> {/* 追加 */}
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Route>

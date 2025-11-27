@@ -21,29 +21,36 @@ import {
   FormControl,
   InputLabel,
   TableSortLabel,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import api from '../api/axios'; // 追加
 
-type Grade = 'B3' | 'B4' | 'M1' | 'M2' | 'D' | 'P' | 'Others';
+type Attribute = 'B3' | 'B4' | 'M1' | 'M2' | 'D' | 'P' | 'Others';
 
+// バックエンドのLabMemberエンティティに合わせる
 interface Member {
   id: string;
   name: string;
-  grade: Grade;
-  slackId: string;
+  attribute: Attribute;
+  slackDmId: string;
+  userId: string;
 }
 
-type SortField = 'name' | 'grade' | 'slackId';
+type SortField = 'name' | 'attribute' | 'slackDmId';
 type SortOrder = 'asc' | 'desc';
 
 const Members: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true); // 追加
+  const [error, setError] = useState<string | null>(null); // 追加
   const [openDialog, setOpenDialog] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    grade: '' as Grade | '',
-    slackId: '',
+    attribute: '' as Attribute | '',
+    slackDmId: '',
   });
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
@@ -54,28 +61,23 @@ const Members: React.FC = () => {
   }, []);
 
   const fetchMembers = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      // TODO: 実際のAPIエンドポイントに置き換える
-      // const response = await fetch('/api/members');
-      // const data = await response.json();
-      // setMembers(data);
-      
-      // ダミーデータ（開発用）
-      const dummyData: Member[] = [
-        { id: '1', name: '山田太郎', grade: 'B4', slackId: '@yamada' },
-        { id: '2', name: '佐藤花子', grade: 'M1', slackId: '@sato' },
-        { id: '3', name: '鈴木一郎', grade: 'B3', slackId: '@suzuki' },
-      ];
-      setMembers(dummyData);
+      const response = await api.get<Member[]>('/lab-members');
+      setMembers(response.data);
     } catch (error) {
       console.error('メンバーの取得に失敗しました:', error);
+      setError('メンバーの取得に失敗しました。');
+    } finally {
+      setLoading(false);
     }
   };
 
   // ダイアログを開く（新規追加）
   const handleOpenAddDialog = () => {
     setEditingMember(null);
-    setFormData({ name: '', grade: '', slackId: '' });
+    setFormData({ name: '', attribute: '', slackDmId: '' });
     setOpenDialog(true);
   };
 
@@ -84,8 +86,8 @@ const Members: React.FC = () => {
     setEditingMember(member);
     setFormData({
       name: member.name,
-      grade: member.grade,
-      slackId: member.slackId,
+      attribute: member.attribute,
+      slackDmId: member.slackDmId,
     });
     setOpenDialog(true);
   };
@@ -94,7 +96,7 @@ const Members: React.FC = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingMember(null);
-    setFormData({ name: '', grade: '', slackId: '' });
+    setFormData({ name: '', attribute: '', slackDmId: '' });
   };
 
   // フォーム入力の変更
@@ -102,59 +104,22 @@ const Members: React.FC = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 保存処理
+  // 保存処理 (TODO: API連携)
   const handleSave = async () => {
-    // バリデーション
-    if (!formData.name || !formData.grade || !formData.slackId) {
+    if (!formData.name || !formData.attribute || !formData.slackDmId) {
       alert('全ての項目を入力してください');
       return;
     }
-
-    try {
-      if (editingMember) {
-        // 編集
-        // TODO: 実際のAPIエンドポイントに置き換える
-        // await fetch(`/api/members/${editingMember.id}`, {
-        //   method: 'PUT',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData),
-        // });
-        console.log('メンバーを更新:', { ...editingMember, ...formData });
-      } else {
-        // 新規追加
-        // TODO: 実際のAPIエンドポイントに置き換える
-        // await fetch('/api/members', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(formData),
-        // });
-        console.log('メンバーを追加:', formData);
-      }
-      
-      handleCloseDialog();
-      fetchMembers();
-    } catch (error) {
-      console.error('保存に失敗しました:', error);
-      alert('保存に失敗しました');
-    }
+    console.log('Save:', editingMember ? { ...editingMember, ...formData } : formData);
+    handleCloseDialog();
+    // fetchMembers(); // API連携後に有効化
   };
 
-  // 削除処理
+  // 削除処理 (TODO: API連携)
   const handleDelete = async (id: string) => {
-    if (!window.confirm('このメンバーを削除してもよろしいですか？')) {
-      return;
-    }
-
-    try {
-      // TODO: 実際のAPIエンドポイントに置き換える
-      // await fetch(`/api/members/${id}`, { method: 'DELETE' });
-      console.log('メンバーを削除:', id);
-      
-      fetchMembers();
-    } catch (error) {
-      console.error('削除に失敗しました:', error);
-      alert('削除に失敗しました');
-    }
+    if (!window.confirm('このメンバーを削除してもよろしいですか？')) return;
+    console.log('Delete:', id);
+    // fetchMembers(); // API連携後に有効化
   };
 
   // ソート処理
@@ -164,17 +129,15 @@ const Members: React.FC = () => {
     setSortField(field);
   };
 
-  // ソート済みメンバーリスト
   const sortedMembers = [...members].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
-    
     if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
     if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
     return 0;
   });
 
-  const gradeOptions: Grade[] = ['B3', 'B4', 'M1', 'M2', 'D', 'P', 'Others'];
+  const attributeOptions: Attribute[] = ['B3', 'B4', 'M1', 'M2', 'D', 'P', 'Others'];
 
   return (
     <Box>
@@ -204,49 +167,69 @@ const Members: React.FC = () => {
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={sortField === 'grade'}
-                  direction={sortField === 'grade' ? sortOrder : 'asc'}
-                  onClick={() => handleSort('grade')}
+                  active={sortField === 'attribute'}
+                  direction={sortField === 'attribute' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('attribute')}
                 >
-                  学年
+                  属性
                 </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={sortField === 'slackId'}
-                  direction={sortField === 'slackId' ? sortOrder : 'asc'}
-                  onClick={() => handleSort('slackId')}
+                  active={sortField === 'slackDmId'}
+                  direction={sortField === 'slackDmId' ? sortOrder : 'asc'}
+                  onClick={() => handleSort('slackDmId')}
                 >
-                  Slack ID
+                  Slack DM ID
                 </TableSortLabel>
               </TableCell>
               <TableCell align="right">操作</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedMembers.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell>{member.name}</TableCell>
-                <TableCell>{member.grade}</TableCell>
-                <TableCell>{member.slackId}</TableCell>
-                <TableCell align="right">
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleOpenEditDialog(member)}
-                    size="small"
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(member.id)}
-                    size="small"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <CircularProgress />
                 </TableCell>
               </TableRow>
-            ))}
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={4}>
+                  <Alert severity="error">{error}</Alert>
+                </TableCell>
+              </TableRow>
+            ) : sortedMembers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  メンバーが見つかりません。
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedMembers.map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell>{member.name}</TableCell>
+                  <TableCell>{member.attribute}</TableCell>
+                  <TableCell>{member.slackDmId}</TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleOpenEditDialog(member)}
+                      size="small"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => handleDelete(member.id)}
+                      size="small"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -266,26 +249,26 @@ const Members: React.FC = () => {
               onChange={(e) => handleInputChange('name', e.target.value)}
             />
             <FormControl fullWidth required>
-              <InputLabel>学年</InputLabel>
+              <InputLabel>属性</InputLabel>
               <Select
-                value={formData.grade}
-                label="学年"
-                onChange={(e) => handleInputChange('grade', e.target.value)}
+                value={formData.attribute}
+                label="属性"
+                onChange={(e) => handleInputChange('attribute', e.target.value)}
               >
-                {gradeOptions.map((grade) => (
-                  <MenuItem key={grade} value={grade}>
-                    {grade}
+                {attributeOptions.map((attr) => (
+                  <MenuItem key={attr} value={attr}>
+                    {attr}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
             <TextField
-              label="Slack ID"
+              label="Slack DM ID"
               required
               fullWidth
-              value={formData.slackId}
-              onChange={(e) => handleInputChange('slackId', e.target.value)}
-              placeholder="@username"
+              value={formData.slackDmId}
+              onChange={(e) => handleInputChange('slackDmId', e.target.value)}
+              placeholder="U..."
             />
           </Box>
         </DialogContent>

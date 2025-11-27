@@ -18,9 +18,10 @@ import {
   Menu as MenuIcon,
   Home as HomeIcon,
   People as PeopleIcon,
-  Logout as LogoutIcon, // 追加
+  AccountCircle as AccountCircleIcon, // 追加
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext'; // 追加
+import { useAuth } from '../contexts/AuthContext';
 
 const drawerWidth = 240;
 
@@ -33,13 +34,14 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { text: 'ホーム', icon: <HomeIcon />, path: '/' },
   { text: 'メンバー管理', icon: <PeopleIcon />, path: '/members' },
+  { text: 'プロフィール', icon: <AccountCircleIcon />, path: '/profile' }, // 追加
 ];
 
 const Layout: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth(); // 追加
+  const { logout } = useAuth();
 
   const handleDrawerToggle = () => {
     setDrawerOpen(!drawerOpen);
@@ -54,7 +56,7 @@ const Layout: React.FC = () => {
     navigate('/');
   };
 
-  const handleLogout = () => { // 追加
+  const handleLogout = () => {
     logout();
     navigate('/login');
   };
@@ -111,7 +113,6 @@ const Layout: React.FC = () => {
           >
             {menuItems.find((item) => item.path === location.pathname)?.text || 'KANKAN-BS2'}
           </Typography>
-          {/* ログアウトボタンを追加 */}
           <IconButton color="inherit" onClick={handleLogout}>
             <LogoutIcon />
           </IconButton>

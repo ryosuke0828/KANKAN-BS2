@@ -13,21 +13,25 @@ import {
   Grid,
   Link,
 } from '@mui/material';
-import { useAuth } from '../contexts/AuthContext';
 
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const apiBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
-  const handleLogin = async (event: React.FormEvent) => {
+  const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
     setLoading(true);
 
     if (!apiBaseUrl) {
@@ -37,20 +41,15 @@ const Login: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(`${apiBaseUrl}/auth/login`, {
+      await axios.post(`${apiBaseUrl}/auth/register`, {
         email,
         password,
       });
-
-      if (response.data && response.data.token) {
-        login(response.data.token);
-        navigate('/');
-      } else {
-        setError('Login failed: No token received.');
-      }
+      // Registration successful, navigate to login page to sign in
+      navigate('/login');
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.message || 'Invalid email or password.');
+        setError(err.response.data.message || 'Registration failed.');
       } else {
         setError('An unexpected error occurred. Please try again.');
       }
@@ -72,9 +71,9 @@ const Login: React.FC = () => {
         }}
       >
         <Typography component="h1" variant="h5">
-          Login
+          Sign Up
         </Typography>
-        <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
+        <Box component="form" onSubmit={handleRegister} sx={{ mt: 1 }}>
           {error && <Alert severity="error" sx={{ width: '100%', mt: 2, mb: 1 }}>{error}</Alert>}
           <TextField
             margin="normal"
@@ -97,9 +96,20 @@ const Login: React.FC = () => {
             label="Password"
             type="password"
             id="password"
-            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            id="confirmPassword"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             disabled={loading}
           />
           <Box sx={{ position: 'relative' }}>
@@ -110,7 +120,7 @@ const Login: React.FC = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              Sign In
+              Sign Up
             </Button>
             {loading && (
               <CircularProgress
@@ -127,8 +137,8 @@ const Login: React.FC = () => {
           </Box>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link component={RouterLink} to="/register" variant="body2">
-                Don't have an account? Sign Up
+              <Link component={RouterLink} to="/login" variant="body2">
+                Already have an account? Sign in
               </Link>
             </Grid>
           </Grid>
@@ -138,4 +148,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Register;
