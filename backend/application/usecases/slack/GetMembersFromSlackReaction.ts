@@ -3,13 +3,11 @@ import { ILabMemberRepository } from '../../../domain/interfaces/ILabMemberRepos
 import { ISlackRepository } from '../../../domain/interfaces/ISlackRepository.js';
 import { LabMember } from '../../../domain/entities/LabMember.js';
 
-// ユースケースの入力データ型
 export interface GetMembersFromSlackReactionInput {
   userId: string;
   messageTimestamp: string;
 }
 
-// ユースケースの出力データ型
 export type GetMembersFromSlackReactionOutput = LabMember[];
 
 export class GetMembersFromSlackReaction {
