@@ -4,7 +4,8 @@ import { createMemberRouter } from './routes/memberRoutes.js';
 import { createPaymentRouter } from './routes/paymentRoutes.js';
 import { createLabMemberRouter } from './routes/labMemberRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import { authMiddleware } from './middlewares/authMiddleware.js'; // 追加
+import userRoutes from './routes/userRoutes.js';
+import { authMiddleware } from './middlewares/authMiddleware.js';
 import { LabMemberRepositoryImpl } from '../infrastructure/repositories/LabMemberRepositoryImpl.js';
 import { UserRepositoryImpl } from '../infrastructure/repositories/UserRepositoryImpl.js';
 import { SlackRepositoryImpl } from '../infrastructure/external/SlackRepositoryImpl.js';
@@ -30,6 +31,7 @@ const labMemberRouter = createLabMemberRouter(labMemberRepository);
 app.use('/api/v1/auth', authRoutes);
 
 // 認証が必要なルート
+app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/members', authMiddleware, memberRouter);
 app.use('/api/v1/payments', authMiddleware, paymentRouter);
 app.use('/api/v1/lab-members', authMiddleware, labMemberRouter);
@@ -41,4 +43,3 @@ app.get('/', (req, res) => {
 
 // Lambdaハンドラとしてエクスポート
 export const handler = serverless(app);
-
