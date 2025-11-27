@@ -1,67 +1,113 @@
-import assert from 'assert';
 import request from 'supertest';
 import { createLabMemberRouter } from '../../presentation/routes/labMemberRoutes.js';
 import { createTestServer } from '../helpers/createTestServer.js';
-import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
+import { LabMemberRepositoryImpl } from '../../infrastructure/repositories/LabMemberRepositoryImpl.js';
 import { LabMember } from '../../domain/entities/LabMember.js';
-import { MemberAttribute } from '../../domain/types/MemberAttribute.js';
+import { ILabMemberRepository } from '../../domain/interfaces/ILabMemberRepository.js';
 
-// 1. ILabMemberRepository のモックを作成
-const mockLabMemberRepository: ILabMemberRepository = {
-  save: async (member: LabMember): Promise<void> => {
-    // 何も返さない
-    return;
-  },
-  findById: async (id: string): Promise<LabMember | null> => null, // 今回は使わない
-  findAllByUserId: async (userId: string): Promise<LabMember[]> => [], // 今回は使わない
-  delete: async (id: string): Promise<void> => {}, // 今回は使わない
-  findBySlackDmId: async (slackDmId: string): Promise<LabMember | null> => null, // 今回は使わない
-};
+// モックのリポジトリ実装
+class MockLabMemberRepository implements ILabMemberRepository {
+  private members: LabMember[] = [];
 
-// 2. テストサーバーをセットアップ
-const labMemberRouter = createLabMemberRouter(mockLabMemberRepository);
-const app = createTestServer(labMemberRouter, '/api/v1/lab-members');
+  async findById(id: string): Promise<LabMember | null> {
+    return this.members.find(m => m.id === id) || null;
+  }
 
-// 3. テストケースを記述
-async function runTests() {
-  console.log('Running labMemberRoutes tests...');
+  async findBySlackDmId(slackDmId: string): Promise<LabMember | null> {
+    return this.members.find(m => m.slackDmId === slackDmId) || null;
+  }
 
-  // 成功ケース
-  console.log('  Test Case: should create a lab member and return 201');
-  const newMemberData = {
-    name: 'Test User',
-    attribute: 'B4',
-    slackDmId: 'U12345',
-    userId: 'user-test-id',
-  };
+  async findAllByUserId(userId: string): Promise<LabMember[]> {
+    return this.members.filter(m => m.userId === userId);
+  }
 
-  const response = await request(app)
-    .post('/api/v1/lab-members')
-    .send(newMemberData);
+  async save(labMember: LabMember): Promise<void> {
+    const index = this.members.findIndex(m => m.id === labMember.id);
+    if (index > -1) {
+      this.members[index] = labMember;
+    } else {
+      this.members.push(labMember);
+    }
+  }
 
-  assert.strictEqual(response.status, 201, 'Test Case 1 Failed: Status code should be 201');
-  assert.strictEqual(response.body.name, newMemberData.name, 'Test Case 1 Failed: Name should match');
-  assert.ok(response.body.id, 'Test Case 1 Failed: ID should be present');
-  console.log('    Test Case 1 Passed.');
-
-
-  // 失敗ケース：必須パラメータ不足
-  console.log('  Test Case: should return 400 if required fields are missing');
-  const incompleteData = {
-    name: 'Test User',
-  };
-
-  const response2 = await request(app)
-    .post('/api/v1/lab-members')
-    .send(incompleteData);
-
-  assert.strictEqual(response2.status, 400, 'Test Case 2 Failed: Status code should be 400');
-  console.log('    Test Case 2 Passed.');
-
-  console.log('All labMemberRoutes tests passed!');
+  async delete(id: string): Promise<void> {
+    this.members = this.members.filter(m => m.id !== id);
+  }
 }
 
-runTests().catch(error => {
-  console.error('An unexpected error occurred during test execution:', error);
-  process.exit(1);
+describe('labMemberRoutes', () => {
+  let mockLabMemberRepository: MockLabMemberRepository;
+  let app: any; // Express app
+
+  beforeEach(() => {
+    mockLabMemberRepository = new MockLabMemberRepository();
+    const labMemberRouter = createLabMemberRouter(mockLabMemberRepository);
+    app = createTestServer(labMemberRouter, '/api/v1/lab-members');
+  });
+
+  // テストケース
+  it('should create a new lab member', async () => {
+    const newMember = {
+      name: 'Test Member',
+      attribute: 'B3',
+      slackDmId: 'U1234567890',
+      userId: 'user123',
+    };
+
+    const res = await request(app)
+      .post('/api/v1/lab-members')
+      .send(newMember)
+      .expect(201);
+
+    expect(res.body).toHaveProperty('id');
+    expect(res.body.name).toBe(newMember.name);
+  });
+
+  it('should get a lab member by ID', async () => {
+    const member = new LabMember('member1', 'Existing Member', 'M1', 'U0987654321', 'user123');
+    await mockLabMemberRepository.save(member);
+
+    const res = await request(app)
+      .get(`/api/v1/lab-members/${member.id}`)
+      .expect(200);
+
+    expect(res.body.id).toBe(member.id);
+    expect(res.body.name).toBe(member.name);
+  });
+
+  it('should return 404 if lab member not found', async () => {
+    await request(app)
+      .get('/api/v1/lab-members/nonexistent')
+      .expect(404);
+  });
+
+  it('should update a lab member', async () => {
+    const member = new LabMember('member1', 'Existing Member', 'M1', 'U0987654321', 'user123');
+    await mockLabMemberRepository.save(member);
+
+    const updatedData = {
+      name: 'Updated Member Name',
+      attribute: 'M2',
+    };
+
+    const res = await request(app)
+      .put(`/api/v1/lab-members/${member.id}`)
+      .send(updatedData)
+      .expect(200);
+
+    expect(res.body.name).toBe(updatedData.name);
+    expect(res.body.attribute).toBe(updatedData.attribute);
+  });
+
+  it('should delete a lab member', async () => {
+    const member = new LabMember('member1', 'Existing Member', 'M1', 'U0987654321', 'user123');
+    await mockLabMemberRepository.save(member);
+
+    await request(app)
+      .delete(`/api/v1/lab-members/${member.id}`)
+      .expect(204);
+
+    const found = await mockLabMemberRepository.findById(member.id);
+    expect(found).toBeNull();
+  });
 });
